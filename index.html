@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Dijkstra Test</title>
+  </head>
+  <body>
+    <h1>Check console (F12)</h1>
+
+    <script type="module">
+      import { Node } from "./js/core/Node.js";
+      import { Edge } from "./js/core/Edge.js";
+      import { Graph } from "./js/core/Graph.js";
+      import { Dijkstra } from "./js/core/Dijkstra.js";
+
+      const graph = new Graph();
+
+      graph.addNode("A");
+      graph.addNode("B");
+      graph.addNode("C");
+
+      graph.connectDirected("A", "B", 5);
+      graph.connectDirected("B", "C", 3);
+      graph.connectDirected("A", "C", 10);
+
+      const dijkstra = new Dijkstra(graph);
+
+      const result = dijkstra.run("A", "C");
+
+      console.log("Distance:", result.distance);
+      console.log(
+        "Path:",
+        result.path.map((n) => n.id),
+      );
+    </script>
+  </body>
+</html>
