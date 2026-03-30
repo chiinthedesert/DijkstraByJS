@@ -30,6 +30,9 @@ export class Animator {
 
       case StepType.FINALIZE:
         this.renderer.markVisited(step.node.id);
+        if (step.from) {
+          this.renderer.markEdgeVisited(step.from.id, step.node.id);
+        }
         break;
     }
   }

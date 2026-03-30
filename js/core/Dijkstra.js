@@ -56,6 +56,7 @@ export class Dijkstra {
           type: StepType.FINALIZE,
           node: current,
           dist: distances.get(current),
+          from: previous.get(current) || null,
         });
 
         return {
@@ -98,6 +99,7 @@ export class Dijkstra {
         type: StepType.FINALIZE,
         node: current,
         dist: distances.get(current),
+        from: previous.get(current) || null,
       });
 
       visited.add(current);

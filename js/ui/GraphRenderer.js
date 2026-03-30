@@ -64,6 +64,15 @@ export class GraphRenderer {
             "background-color": "green",
           },
         },
+        // ===== Finalized edge =====
+        {
+          selector: ".visited-edge",
+          style: {
+            "line-color": "green",
+            "target-arrow-color": "green",
+            width: 4,
+          },
+        },
       ],
     });
   }
@@ -119,6 +128,11 @@ export class GraphRenderer {
   // ===== Mark node as finalized =====
   markVisited(nodeId) {
     this.cy.getElementById(nodeId).addClass("visited-node");
+  }
+  // ===== Mark edge as finalized =====
+  markEdgeVisited(fromId, toId) {
+    const edgeId = `${fromId}-${toId}`;
+    this.cy.getElementById(edgeId).addClass("visited-edge");
   }
 
   // ===== Reset everything =====
