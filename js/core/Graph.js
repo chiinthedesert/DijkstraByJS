@@ -28,7 +28,7 @@ export class Graph {
     const target = this.nodes.get(to);
 
     if (!source || !target) {
-      throw new Error("nodes khong tồn tại trong graph");
+      throw new Error("nodes không tồn tại trong graph");
     }
     if (source === target) {
       throw new Error("source và target không thể là cùng một node");

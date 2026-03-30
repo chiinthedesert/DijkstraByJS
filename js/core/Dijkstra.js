@@ -40,7 +40,7 @@ export class Dijkstra {
     const queue = new MinHeap((a, b) => distances.get(a) - distances.get(b));
     queue.push(start);
 
-    while (queue.size > 0) {
+    while (queue.size() > 0) {
       const current = queue.pop();
 
       if (visited.has(current)) continue;
@@ -48,18 +48,23 @@ export class Dijkstra {
       steps.push({
         type: StepType.VISIT,
         node: current,
+        dist: distances.get(current),
       });
 
       if (current === end) {
         steps.push({
           type: StepType.FINALIZE,
           node: current,
+          dist: distances.get(current),
         });
 
         return {
           distance: distances.get(end),
           path: this.reconstructPath(start, end, previous),
           steps,
+          previous,
+          start,
+          end,
         };
       }
 
@@ -68,6 +73,9 @@ export class Dijkstra {
           type: StepType.RELAX,
           from: current,
           to: edge.target,
+          weight: edge.weight,
+          fromDist: distances.get(current),
+          toDist: distances.get(edge.target),
         });
 
         const newDist = distances.get(current) + edge.weight;
@@ -77,6 +85,8 @@ export class Dijkstra {
             type: StepType.UPDATE,
             node: edge.target,
             from: current,
+            oldDist: distances.get(edge.target),
+            newDist: newDist,
           });
 
           distances.set(edge.target, newDist);
@@ -87,6 +97,7 @@ export class Dijkstra {
       steps.push({
         type: StepType.FINALIZE,
         node: current,
+        dist: distances.get(current),
       });
 
       visited.add(current);
@@ -96,6 +107,9 @@ export class Dijkstra {
       distance: distances.get(end),
       path: this.reconstructPath(start, end, previous),
       steps,
+      previous,
+      start,
+      end,
     };
   }
 

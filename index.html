@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title></title>
+    <link href="css/style.css" rel="stylesheet" />
+    <script src="./node_modules/cytoscape/dist/cytoscape.min.js"></script>
+    <script type="module" src="./js/main.js"></script>
+  </head>
+  <body>
+    <div style="display: flex; height: 100vh">
+      <!-- LEFT PANEL -->
+      <div style="width: 300px; padding: 10px">
+        <h3>Nodes</h3>
+        <textarea id="nodesInput"></textarea>
+
+        <h3>Edges</h3>
+        <textarea id="edgesInput"></textarea>
+
+        <h3>Start</h3>
+        <input id="startInput" />
+
+        <h3>End</h3>
+        <input id="endInput" />
+
+        <button id="runBtn">Run</button>
+      </div>
+
+      <!-- GRAPH -->
+      <div id="cy" style="flex: 1"></div>
+    </div>
+  </body>
+</html>
