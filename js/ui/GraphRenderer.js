@@ -5,31 +5,30 @@ export class GraphRenderer {
 
       elements: [],
 
-      layout: {
-        name: "cose",
-      },
+      layout: { name: "cose" },
 
       style: [
-        // ===== Nodes =====
+        // style cho nodes
         {
           selector: "node",
           style: {
             label: "data(id)",
-            "text-valign": "center",
-            "text-halign": "center",
             "background-color": "#666",
             color: "#fff",
+            "text-valign": "center",
+            "text-halign": "center",
           },
         },
 
-        // ===== Edges =====
+        // style cho edges
         {
           selector: "edge",
           style: {
             label: "data(weight)",
-            "curve-style": "bezier",
-            width: 2,
+            "text-rotation": "autorotate",
+
             "line-color": "#999",
+            "curve-style": "bezier",
           },
         },
         {
@@ -39,52 +38,66 @@ export class GraphRenderer {
             "target-arrow-color": "#999",
           },
         },
-        // ===== Active node (VISIT) =====
-        {
-          selector: ".active-node",
-          style: {
-            "background-color": "red",
-          },
-        },
 
-        // ===== Active edge (RELAX) =====
+        // style cho finalized nodes và edges
         {
-          selector: ".active-edge",
-          style: {
-            "line-color": "orange",
-            "target-arrow-color": "orange",
-            "target-arrow-shape": "triangle",
-            width: 4,
-          },
-        },
-        // ===== Finalized node =====
-        {
-          selector: ".visited-node",
+          selector: ".finalized-node",
           style: {
             "background-color": "green",
           },
         },
-        // ===== Finalized edge =====
         {
-          selector: ".visited-edge",
+          selector: ".finalized-edge",
           style: {
             "line-color": "green",
             "target-arrow-color": "green",
-            width: 4,
+          },
+        },
+
+        // style cho relax edges
+        {
+          selector: ".relax-edge",
+          style: {
+            "line-color": "orange",
+            "target-arrow-color": "orange",
+          },
+        },
+
+        // style cho updated nodes
+        {
+          selector: ".updated-node",
+          style: {
+            "background-color": "yellow",
+          },
+        },
+
+        // style cho shortest path
+        {
+          selector: ".path-node",
+          style: {
+            "background-color": "blue",
+          },
+        },
+        {
+          selector: ".path-edge",
+          style: {
+            "line-color": "blue",
+            "target-arrow-color": "blue",
           },
         },
       ],
     });
   }
 
-  // ===== Load graph =====
+  /**
+   * @param {Graph} graph - Đối tượng Graph đã được xây dựng từ input
+   * @param {Array<{ from: string, to: string, weight: number, directed: boolean }>} parsedEdges - Mảng cạnh đã được phân tích từ input
+   */
   load(graph, parsedEdges) {
     const elements = [];
 
     for (const node of graph.getAllNodes()) {
-      elements.push({
-        data: { id: node.id },
-      });
+      elements.push({ data: { id: node.id } });
     }
 
     for (const edge of parsedEdges) {
@@ -101,43 +114,88 @@ export class GraphRenderer {
 
     this.cy.elements().remove();
     this.cy.add(elements);
-
     this.cy.layout({ name: "cose" }).run();
   }
 
-  // ===== Clear temporary highlights =====
-  clearActive() {
-    this.cy.nodes().removeClass("active-node");
-    this.cy.edges().removeClass("active-edge");
+  /**
+   * Thêm class "finalized-node" vào node đã được finalize
+   * @param {string} id - ID của node
+   */
+  setFinalizedNode(id) {
+    this.cy.getElementById(id).removeClass("updated-node");
+    this.cy.getElementById(id).addClass("finalized-node");
   }
 
-  // ===== Highlight current node =====
-  highlightNode(nodeId) {
-    this.clearActive();
-    this.cy.getElementById(nodeId).addClass("active-node");
+  /**
+   * Thêm class "updated-node" vào node đã được cập nhật khoảng cách
+   * @param {string} id - ID của node
+   */
+  setUpdatedNode(id) {
+    this.cy.getElementById(id).addClass("updated-node");
   }
 
-  // ===== Highlight edge =====
-  highlightEdge(fromId, toId) {
-    this.clearActive();
-
-    const edgeId = `${fromId}-${toId}`;
-    this.cy.getElementById(edgeId).addClass("active-edge");
+  /**
+   * Thêm class "relax-edge" vào cạnh đang được relax
+   * @param {string} from - ID của node nguồn
+   * @param {string} to - ID của node đích
+   */
+  setRelaxEdge(from, to) {
+    this.getEdge(from, to).addClass("relax-edge");
   }
 
-  // ===== Mark node as finalized =====
-  markVisited(nodeId) {
-    this.cy.getElementById(nodeId).addClass("visited-node");
-  }
-  // ===== Mark edge as finalized =====
-  markEdgeVisited(fromId, toId) {
-    const edgeId = `${fromId}-${toId}`;
-    this.cy.getElementById(edgeId).addClass("visited-edge");
+  /**
+   * Thêm class "finalized-edge" vào cạnh đã được finalize
+   * @param {string} from - ID của node nguồn
+   * @param {string} to - ID của node đích
+   */
+  setFinalizedEdge(from, to) {
+    this.getEdge(from, to).removeClass("relax-edge");
+    this.getEdge(from, to).addClass("finalized-edge");
   }
 
-  // ===== Reset everything =====
+  /**
+   * Đánh dấu đường đi ngắn nhất bằng cách thêm class "path-node" và "path-edge"
+   * @param {Array<{ id: string }>} path - Mảng các node trong đường đi ngắn nhất, mỗi node có thuộc tính id
+   */
+  highlightPath(path) {
+    if (!path) return;
+
+    for (const node of path) {
+      this.cy.getElementById(node.id).addClass("path-node");
+    }
+
+    for (let i = 0; i < path.length - 1; i++) {
+      const from = path[i].id;
+      const to = path[i + 1].id;
+      this.getEdge(from, to).addClass("path-edge");
+    }
+  }
+
+  /**
+   * Lấy cạnh giữa hai node, nếu cạnh không có hướng thì sẽ kiểm tra cả hai hướng
+   * @param {string} from - ID của node nguồn
+   * @param {string} to - ID của node đích
+   * @returns {cytoscape.EdgeCollection} Trả về một EdgeCollection chứa cạnh giữa from và to, hoặc rỗng nếu không tồn tại
+   */
+  getEdge(from, to) {
+    const direct = this.cy.getElementById(`${from}-${to}`);
+    if (direct.length > 0) return direct;
+
+    const reverse = this.cy.getElementById(`${to}-${from}`);
+    if (reverse.length > 0 && reverse.data("directed") === "false")
+      return reverse;
+
+    return this.cy.collection();
+  }
+
+  /**
+   * Loại bỏ tất cả các class trạng thái để reset lại đồ thị về trạng thái ban đầu
+   */
   reset() {
-    this.cy.nodes().removeClass("active-node visited-node");
-    this.cy.edges().removeClass("active-edge");
+    this.cy
+      .elements()
+      .removeClass(
+        "finalized-node updated-node relax-edge finalized-edge path-node path-edge",
+      );
   }
 }

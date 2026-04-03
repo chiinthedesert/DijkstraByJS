@@ -1,6 +1,10 @@
 export const StepType = {
-  VISIT: "VISIT",
+  FINALIZE: "FINALIZE",
   RELAX: "RELAX",
   UPDATE: "UPDATE",
-  FINALIZE: "FINALIZE",
+  PATH: "PATH",
 };
+
+/**
+ * @typedef {typeof StepType[keyof typeof StepType]} StepTypeValue
+ */

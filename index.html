@@ -3,20 +3,33 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title></title>
-    <link href="css/style.css" rel="stylesheet" />
+    <title>Dijkstra Visualizer</title>
+
     <script src="./node_modules/cytoscape/dist/cytoscape.min.js"></script>
     <script type="module" src="./js/main.js"></script>
   </head>
+
   <body>
     <div style="display: flex; height: 100vh">
       <!-- LEFT PANEL -->
-      <div style="width: 300px; padding: 10px">
+      <div style="width: 320px; padding: 12px; box-sizing: border-box">
         <h3>Nodes</h3>
-        <textarea id="nodesInput"></textarea>
+        <textarea id="nodesInput" rows="3">
+a b c d e f g
+        </textarea>
 
         <h3>Edges</h3>
-        <textarea id="edgesInput"></textarea>
+        <textarea id="edgesInput" rows="8">
+a b 3
+a c 1
+b c 7
+b d 5
+c d 2
+c e 7
+d e 2
+d f 3
+e f 1
+        </textarea>
 
         <h3>Start</h3>
         <input id="startInput" />
@@ -24,11 +37,23 @@
         <h3>End</h3>
         <input id="endInput" />
 
-        <button id="runBtn">Run</button>
+        <br /><br />
+
+        <!-- Controls -->
+        <div>
+          <button id="buildBtn">Build</button>
+          <button id="playBtn">Play</button>
+        </div>
+
+        <div style="margin-top: 8px">
+          <button id="nextBtn">Next</button>
+          <button id="prevBtn">Previous</button>
+          <button id="clearBtn">Clear</button>
+        </div>
       </div>
 
       <!-- GRAPH -->
-      <div id="cy" style="flex: 1"></div>
+      <div id="graph" style="flex: 1; border-left: 1px solid #ccc"></div>
     </div>
   </body>
 </html>

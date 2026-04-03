@@ -1,49 +1,63 @@
 import { Graph } from "../core/Graph.js";
 import { Dijkstra } from "../core/Dijkstra.js";
-import { InputParser } from "./InputParser.js";
 
 export class AppController {
-  constructor(renderer, animator) {
-    this.renderer = renderer;
+  constructor(inputParser, animator, graphRenderer) {
+    this.inputParser = inputParser;
     this.animator = animator;
-    this.parser = new InputParser();
+    this.graphRenderer = graphRenderer;
   }
 
-  handleRun() {
+  init() {
+    this.bindUI();
+  }
+
+  bindUI() {
+    this.nodesInput = document.getElementById("nodesInput");
+    this.edgesInput = document.getElementById("edgesInput");
+    this.startInput = document.getElementById("startInput");
+    this.endInput = document.getElementById("endInput");
+
+    this.buildBtn = document.getElementById("buildBtn");
+    this.nextBtn = document.getElementById("nextBtn");
+    this.prevBtn = document.getElementById("prevBtn");
+    this.clearBtn = document.getElementById("clearBtn");
+    this.playBtn = document.getElementById("playBtn");
+
+    this.buildBtn.onclick = () => this.handleBuild();
+    this.nextBtn.onclick = () => this.animator.next();
+    this.prevBtn.onclick = () => this.animator.previous();
+    this.clearBtn.onclick = () => this.animator.resetView();
+    this.playBtn.onclick = () => this.animator.play();
+  }
+
+  handleBuild() {
     try {
-      // ===== 1. Get input =====
-      const nodesText = document.getElementById("nodesInput").value;
-      const edgesText = document.getElementById("edgesInput").value;
-      const start = document.getElementById("startInput").value.trim();
-      const end = document.getElementById("endInput").value.trim();
+      const nodesText = this.nodesInput.value;
+      const edgesText = this.edgesInput.value;
+      const start = this.startInput.value.trim();
+      const end = this.endInput.value.trim();
 
-      // ===== 2. Parse =====
-      const { nodes, edges } = this.parser.parse(nodesText, edgesText);
+      const { nodes, edges } = this.inputParser.parse(nodesText, edgesText);
 
-      // ===== 3. Build graph =====
       const graph = new Graph();
 
-      for (const id of nodes) {
-        graph.addNode(id);
-      }
-
-      for (const edge of edges) {
+      nodes.forEach((nodeId) => graph.addNode(nodeId));
+      edges.forEach((edge) => {
         if (edge.directed) {
           graph.connectDirected(edge.from, edge.to, edge.weight);
         } else {
           graph.connectUndirected(edge.from, edge.to, edge.weight);
         }
-      }
+      });
 
-      // ===== 4. Render =====
-      this.renderer.load(graph, edges);
-
-      // ===== 5. Run algorithm =====
       const dijkstra = new Dijkstra(graph);
       const result = dijkstra.run(start, end);
 
-      // ===== 6. Animate =====
-      this.animator.play(result.steps);
+      this.graphRenderer.load(graph, edges);
+
+      this.animator.resetView();
+      this.animator.build(result);
     } catch (err) {
       alert(err.message);
     }

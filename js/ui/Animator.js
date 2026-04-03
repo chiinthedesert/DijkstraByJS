@@ -1,42 +1,81 @@
 import { StepType } from "../core/Step.js";
+import { GraphRenderer } from "./GraphRenderer.js";
 
 export class Animator {
-  constructor(renderer) {
-    this.renderer = renderer;
-    this.delay = 600; // ms between steps
+  /**
+   * @param {GraphRenderer} graphRenderer
+   */
+  constructor(graphRenderer) {
+    this.graphRenderer = graphRenderer;
+    this.steps = [];
+    this.index = 0;
   }
 
-  async play(steps) {
-    this.renderer.reset();
+  build(result) {
+    this.steps = result.steps;
+    this.index = 0;
+    this.result = result;
+    this.graphRenderer.reset();
+  }
 
-    for (const step of steps) {
-      this.applyStep(step);
-      await this.sleep(this.delay);
+  play(time = 400) {
+    var self = this;
+
+    function run() {
+      if (self.index >= self.steps.length) {
+        return;
+      }
+
+      self.next();
+
+      setTimeout(run, time);
     }
+
+    run();
+  }
+
+  next() {
+    if (this.index >= this.steps.length) return;
+
+    this.index++;
+    this.applyStep(this.steps[this.index - 1]);
+  }
+
+  previous() {
+    if (this.index <= 0) return;
+    this.index--;
+    this.graphRenderer.reset();
+
+    for (let i = 0; i < this.index; i++) {
+      this.applyStep(this.steps[i]);
+    }
+  }
+
+  resetView() {
+    this.index = 0;
+    this.graphRenderer.reset();
   }
 
   applyStep(step) {
     switch (step.type) {
-      case StepType.VISIT:
-        this.renderer.highlightNode(step.node.id);
+      case StepType.FINALIZE:
+        this.graphRenderer.setFinalizedNode(step.node.id);
+        if (step.from) {
+          this.graphRenderer.setFinalizedEdge(step.from.id, step.node.id);
+        }
         break;
 
       case StepType.RELAX:
-        this.renderer.highlightEdge(step.from.id, step.to.id);
+        this.graphRenderer.setRelaxEdge(step.from.id, step.to.id);
         break;
 
       case StepType.UPDATE:
+        this.graphRenderer.setUpdatedNode(step.node.id);
         break;
 
-      case StepType.FINALIZE:
-        this.renderer.markVisited(step.node.id);
-        if (step.from) {
-          this.renderer.markEdgeVisited(step.from.id, step.node.id);
-        }
+      case StepType.PATH:
+        this.graphRenderer.highlightPath(step.path);
         break;
     }
-  }
-  sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

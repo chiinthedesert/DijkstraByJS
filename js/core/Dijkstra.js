@@ -46,22 +46,21 @@ export class Dijkstra {
       if (visited.has(current)) continue;
 
       steps.push({
-        type: StepType.VISIT,
+        type: StepType.FINALIZE,
         node: current,
         dist: distances.get(current),
+        from: previous.get(current) || null,
       });
+
+      visited.add(current);
 
       if (current === end) {
         steps.push({
-          type: StepType.FINALIZE,
-          node: current,
-          dist: distances.get(current),
-          from: previous.get(current) || null,
+          type: StepType.PATH,
+          path: this.reconstructPath(start, end, previous),
         });
-
         return {
           distance: distances.get(end),
-          path: this.reconstructPath(start, end, previous),
           steps,
           previous,
           start,
@@ -70,6 +69,8 @@ export class Dijkstra {
       }
 
       for (const edge of current.edges) {
+        if (visited.has(edge.target)) continue;
+
         steps.push({
           type: StepType.RELAX,
           from: current,
@@ -95,19 +96,14 @@ export class Dijkstra {
           queue.push(edge.target);
         }
       }
-      steps.push({
-        type: StepType.FINALIZE,
-        node: current,
-        dist: distances.get(current),
-        from: previous.get(current) || null,
-      });
-
-      visited.add(current);
     }
 
+    steps.push({
+      type: StepType.PATH,
+      path: this.reconstructPath(start, end, previous),
+    });
     return {
       distance: distances.get(end),
-      path: this.reconstructPath(start, end, previous),
       steps,
       previous,
       start,

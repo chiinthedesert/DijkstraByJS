@@ -1,12 +1,12 @@
+import { InputParser } from "./controller/InputParser.js";
+import { AppController } from "./controller/AppController.js";
 import { GraphRenderer } from "./ui/GraphRenderer.js";
 import { Animator } from "./ui/Animator.js";
-import { AppController } from "./controller/AppController.js";
 
-const renderer = new GraphRenderer("cy");
-const animator = new Animator(renderer);
+const inputParser = new InputParser();
+const graphRenderer = new GraphRenderer("graph");
+const animator = new Animator(graphRenderer);
 
-const app = new AppController(renderer, animator);
+const appController = new AppController(inputParser, animator, graphRenderer);
 
-document.getElementById("runBtn").onclick = () => {
-  app.handleRun();
-};
+appController.init();
